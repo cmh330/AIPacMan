@@ -24,10 +24,13 @@ class DeepQNetwork(Module):
         # Remember to set self.learning_rate, self.numTrainingGames,
         # and self.batch_size!
         "*** YOUR CODE HERE ***"
-        self.learning_rate = 0
-        self.numTrainingGames = 0
-        self.batch_size = 0
-
+        self.learning_rate = 0.2
+        self.numTrainingGames = 3000
+        self.batch_size = 250
+        hidden_size = 500
+        self.layer1 = Linear(self.state_size, hidden_size)
+        self.layer2 = Linear(hidden_size, self.num_actions)
+        self.parameters = [self.layer1.weight, self.layer1.bias, self.layer2.weight, self.layer2.bias]
         "**END CODE"""
         self.double()
 
@@ -43,6 +46,7 @@ class DeepQNetwork(Module):
             loss node between Q predictions and Q_target
         """
         "*** YOUR CODE HERE ***"
+        return mse_loss(self.forward(states), Q_target)
 
 
     def forward(self, states):
@@ -59,6 +63,8 @@ class DeepQNetwork(Module):
                 scores, for each of the actions
         """
         "*** YOUR CODE HERE ***"
+        temp = relu(self.layer1(states))
+        return self.layer2(temp)
 
     
     def run(self, states):
@@ -78,3 +84,8 @@ class DeepQNetwork(Module):
             None
         """
         "*** YOUR CODE HERE ***"
+        optimizer = optim.SGD(self.parameters, lr=self.learning_rate)
+        optimizer.zero_grad()
+        loss = self.get_loss(states, Q_target)
+        loss.backward()
+        optimizer.step()
